@@ -21,8 +21,13 @@ class AdadgioParseExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        
+
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        $container->setParameter('adadgio_parse.config', $config);
+        // $container->setParameter('adadgio_parse.mapping', $config['mapping']);
+        // $container->setParameter('adadgio_parse.application', $config['application']);
+        // $container->setParameter('adadgio_parse.miscellaneous', $config['miscellaneous']);
     }
 }

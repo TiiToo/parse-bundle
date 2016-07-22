@@ -1,1 +1,23 @@
 services:
+    adadgio_parse.entity_serializer:
+        class: Adadgio\ParseBundle\Component\EntitySerializer
+        arguments:
+            - "%adadgio_parse.config%"
+
+    adadgio_parse.login_serializer:
+        class: Adadgio\ParseBundle\Component\LoginSerializer
+        arguments:
+            - "%adadgio_parse.config%"
+
+    adadgio_parse.query_composer:
+        class: Adadgio\ParseBundle\Component\QueryComposer
+        arguments:
+            - "@doctrine.orm.entity_manager"
+            - "%adadgio_parse.config%"
+
+    adadgio_parse.entity_converter:
+        class: Adadgio\ParseBundle\Component\EntityConverter
+        arguments:
+            - "@doctrine.orm.entity_manager"
+            - "%adadgio_parse.config%"
+            - "%kernel.root_dir"

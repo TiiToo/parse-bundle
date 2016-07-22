@@ -12,7 +12,7 @@ use Adadgio\GearBundle\Component\Api\ApiRequest;
 use Adadgio\GearBundle\Component\Api\ApiResponse;
 use Adadgio\GearBundle\Component\Api\Annotation\Api;
 
-use Adadgio\GearBundle\Connector\Parse\ParseObjectFactory;
+use Adadgio\ParseBundle\Factory\ParseObjectFactory;
 
 /**
  * @Route("/parse/classes")
@@ -26,19 +26,19 @@ class ObjectController extends Controller
      *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function indexAction(ApiRequest $api, $class)
+    public function indexAction(ApiRequest $request, $class)
     {
         $this->injectDependencies();
 
-        switch($api->body('_method')) {
+        switch($request->get('_method')) {
             case 'GET':
-                return $this->queryAction($api, $class);
+                return $this->queryAction($request, $class);
             break;
             case null:
-                return $this->postAction($api, $class);
+                return $this->postAction($request, $class);
             break;
             default:
-                return $this->invalidMethodException($api, 'only GET is allowed');
+                return $this->invalidMethodException($request, 'only GET is allowed');
             break;
         }
     }
@@ -50,7 +50,7 @@ class ObjectController extends Controller
      *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function getAction(ApiRequest $api, $class, $objectId)
+    public function getAction(ApiRequest $request, $class, $objectId)
     {
         $this->injectDependencies();
         $entityId = ParseObjectFactory::getIdFromObjectId($class, $objectId);
@@ -60,10 +60,10 @@ class ObjectController extends Controller
             ->find($entityId);
 
         if (null === $entity) {
-            return $this->notFoundException($api);
+            return $this->notFoundException();
         }
 
-        return $this->objectResultResponse($api, $this->serializer->serialize($entity));
+        return $this->objectResultResponse($this->serializer->serialize($entity));
     }
 
     /**
@@ -75,7 +75,7 @@ class ObjectController extends Controller
      *      requirements={"body"={}}
      * )
      */
-    public function putAction(ApiRequest $api, $class, $objectId)
+    public function putAction(ApiRequest $request, $class, $objectId)
     {
         $this->injectDependencies();
         $entityId = ParseObjectFactory::getIdFromObjectId($class, $objectId);
@@ -85,14 +85,14 @@ class ObjectController extends Controller
             ->find($entityId);
 
         if (null === $entity) {
-            return $this->notFoundException($api);
+            return $this->notFoundException($request);
         }
 
         // update the entity (field defined in converter)
-        $entity = $this->converter->hydrate($entity, $api->body());
+        $entity = $this->converter->hydrate($entity, $request->all());
         $this->em->flush();
 
-        return $this->updatedAtResponse($api, $this->serializer->serialize($entity));
+        return $this->updatedAtResponse($request, $this->serializer->serialize($entity));
     }
 
     /**
@@ -104,9 +104,9 @@ class ObjectController extends Controller
      *      requirements={"body"={}}
      * )
      */
-    public function postAction(ApiRequest $api, $class)
+    public function postAction(ApiRequest $request, $class)
     {
-        $data = $api->body();
+        $data = $request->all();
         $this->injectDependencies();
 
         // (1) create a new object and set all its properties
@@ -117,17 +117,17 @@ class ObjectController extends Controller
         $this->em->persist($entity);
         $this->em->flush();
 
-        return $this->createdAtResponse($api, $this->serializer->serialize($entity));
+        return $this->createdAtResponse($this->serializer->serialize($entity));
     }
-
+    
     /**
      * Called by POST index action with the "_method":"GET" parameter.
      */
-    public function queryAction(ApiRequest $api, $class)
+    public function queryAction(ApiRequest $request, $class)
     {
         $composer = $this
-            ->get('adadgio.rocket.parse.query_composer')
-            ->createFromRequestBody($api->body(), $class)
+            ->get('adadgio_parse.query_composer')
+            ->createFromRequestBody($request->all(), $class)
         ;
 
         $collection = $composer->getResult();
@@ -135,6 +135,6 @@ class ObjectController extends Controller
         $this->serializer->setIncludes($composer->getIncludes()); // will allow whiole related childrene entities inside parent entity instead of pointers
         $this->serializer->executeParallelHydration($class, $composer->getIncludes(), $collection); // will activate and user parallel hdyration :-)
 
-        return $this->queryResultsResponse($api, $this->serializer->serialize($collection));
+        return $this->queryResultsResponse($this->serializer->serialize($collection));
     }
 }

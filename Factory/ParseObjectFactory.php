@@ -6,6 +6,8 @@ use Adadgio\ParseBundle\Factory\ParseDateFactory;
 
 class ParseObjectFactory
 {
+    const NUMBER_OF_LETTERS = 3;
+
     /**
      * Creates the objectId.
      *
@@ -59,7 +61,7 @@ class ParseObjectFactory
         $suffix = 'x';
 
         $entityId = $entity->getId();
-        $entityThreeFirstLetters = substr(self::getClassName($entity), 0, 3);
+        $entityThreeFirstLetters = substr(self::getClassName($entity), 0, static::NUMBER_OF_LETTERS);
 
         return $prefix.$entityThreeFirstLetters.$entityId.$suffix;
     }
@@ -76,7 +78,7 @@ class ParseObjectFactory
 
         $className = str_replace('_', '', $className); // \User class at 360 medical does not have an underscore
 
-        $entityThreeFirstLetters = substr($className, 0, 3);
+        $entityThreeFirstLetters = substr($className, 0, static::NUMBER_OF_LETTERS);
         $id = str_replace($suffix, '', str_replace($prefix.$entityThreeFirstLetters, '', $objectId));
 
         return (int) $id;

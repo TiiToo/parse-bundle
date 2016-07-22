@@ -3,6 +3,8 @@
 namespace Adadgio\ParseBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Adadgio\GearBundle\Component\Api\ApiResponse;
+use Adadgio\ParseBundle\Component\Utility\AliasHelper;
 
 /**
  * Parse base controller.
@@ -11,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 class BaseController extends Controller
 {
     protected $em;
+    protected $config;
     protected $serializer;
     protected $converter;
     protected $validator;
@@ -44,12 +47,17 @@ class BaseController extends Controller
      */
     protected function injectDependencies()
     {
+        $this->em = $this->getDoctrine()->getManager();
         $this->validator = $this->get('validator');
-        $this->em = $em = $this->getDoctrine()->getManager();
-        $this->userManager = $this->get('fos_user.user_manager');
-        $this->serializer = $this->get('adadgio.rocket.parse.entity_serializer');
-        $this->converter = $this->get('adadgio.rocket.parse.entity_converter');
-        $this->loginSerializer = $this->get('adadgio.rocket.parse.login_serializer');
+        $this->config = $this->getParameter('adadgio_parse.config');
+
+        // @todo
+        // check if fos user bundle is installed
+        // $this->userManager = $this->get('fos_user.user_manager');
+
+        $this->serializer = $this->get('adadgio_parse.entity_serializer');
+        $this->converter = $this->get('adadgio_parse.entity_converter');
+        $this->loginSerializer = $this->get('adadgio_parse.login_serializer');
     }
 
     /**
@@ -57,9 +65,16 @@ class BaseController extends Controller
      *
      * @return object \RepositoryInterface
      */
-    protected function getAbstractRepository($className)
+    protected function getAbstractRepository($classShortName)
     {
-        return $this->em->getRepository('MedicalCoreBundle:' . $className);
+        $helper = new AliasHelper($this->config);
+        $alias = $helper->getAlias($classShortName);
+
+        if (false === $alias) {
+            throw new \Exception(sprintf('The class "%s" is not defined in your parse mapping config', $classShortName));
+        }
+
+        return $this->em->getRepository($alias);
     }
 
     /**
@@ -69,7 +84,10 @@ class BaseController extends Controller
      */
     protected function newAbstractInstance($className)
     {
-        $reflection = new \ReflectionClass('Medical\CoreBundle\Entity\\' . $className);
+        $helper = new AliasHelper($this->config);
+        $namespace = $helper->getAlias($classShortName);
+
+        $reflection = new \ReflectionClass($namespace);
         return $reflection->newInstance();
     }
 
@@ -88,9 +106,9 @@ class BaseController extends Controller
      *
      * @return \Response
      */
-    protected function objectResultResponse($api, $object)
+    protected function objectResultResponse(array $serializedObject)
     {
-        return $api->response($object, static::HTTP_OK);
+        return new ApiResponse($serializedObject, static::HTTP_OK);
     }
 
     /**
@@ -98,9 +116,9 @@ class BaseController extends Controller
      *
      * @return \Response
      */
-    protected function createdAtResponse($api, $object)
+    protected function createdAtResponse(array $object)
     {
-        return $api->response(array('objectId' => $object['objectId'], 'createdAt' => $this->justNow()), static::HTTP_OK);
+        return new ApiResponse(array('objectId' => $object['objectId'], 'createdAt' => $this->justNow()), static::HTTP_OK);
     }
 
     /**
@@ -108,19 +126,19 @@ class BaseController extends Controller
      *
      * @return \Response
      */
-    protected function updatedAtResponse($api)
+    protected function updatedAtResponse()
     {
-        return $api->response(array('updatedAt' => $this->justNow()), static::HTTP_OK);
+        return new ApiResponse(array('updatedAt' => $this->justNow()), static::HTTP_OK);
     }
-
+    
     /**
      * Return an array of results object(s) in the response body.
      *
      * @return \Response
      */
-    protected function queryResultsResponse($api, array $results)
+    protected function queryResultsResponse(array $results)
     {
-        return $api->response(array('results' => $results), static::HTTP_OK);
+        return new ApiResponse(array('results' => $results), static::HTTP_OK);
     }
 
     /**
@@ -163,11 +181,14 @@ class BaseController extends Controller
     }
 
     /**
-     * @return \Response
+     * Return a not found response exception from
+     * parse point of view (its still a code 200).
+     *
+     * @return object \ApiResponse
      */
-    protected function notFoundException($api)
+    protected function notFoundException()
     {
-        return $api->response(array('code' => static::PARSE_NOT_FOUND, 'error' => 'object not found'), static::HTTP_OK);
+        return new ApiResponse(array('code' => static::PARSE_NOT_FOUND, 'error' => 'object not found'), static::HTTP_OK);
     }
 
     /**
