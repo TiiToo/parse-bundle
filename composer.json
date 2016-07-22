@@ -1,0 +1,21 @@
+{
+    "name": "adadgio/parse-bundle",
+    "type": "symfony-bundle",
+    "description": "AdadgioParseBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Romain BRUCKERT",
+            "email": "romain.bruckert.esc@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "symfony/symfony": "^2.7|^3.0",
+        "adadgio/gear-bundle": "^1.1"
+    },
+    "autoload": {
+        "psr-0": { "Adadgio\\HealthBundle\\": "" },
+        "psr-4": { "Adadgio\\HealthBundle\\": "" }
+    }
+}
