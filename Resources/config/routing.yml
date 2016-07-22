@@ -1,0 +1,3 @@
+adadgio_parse:
+    resource: "@AdadgioParseBundle/Controller/"
+    type: annotation
