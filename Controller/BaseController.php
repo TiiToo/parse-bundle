@@ -110,7 +110,7 @@ class BaseController extends Controller
     {
         return new ApiResponse($serializedObject, static::HTTP_OK);
     }
-
+    
     /**
      * Return one object JSON directly in the response body.
      *
@@ -130,7 +130,7 @@ class BaseController extends Controller
     {
         return new ApiResponse(array('updatedAt' => $this->justNow()), static::HTTP_OK);
     }
-    
+
     /**
      * Return an array of results object(s) in the response body.
      *
