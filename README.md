@@ -67,8 +67,8 @@ adadgio_parse:
     # the identity of your parse app
     # static api key auth
     application:
-        client_id: LLiAYKuDz7YJLxvY23FK2meX4wG05td6UYxLNJr3
-        client_key: oM0KDVkG6pA84HJSafxMocFTTyZzYmDM2EGlA37f
+        client_id: anyTokenuLike
+        client_key: anysEkreTY0liKe
         client_config: # optional, equivalent to parse config feature
             host: test-host.com
             protocol: test
