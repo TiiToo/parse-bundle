@@ -10,7 +10,6 @@ use Adadgio\GearBundle\Component\Api\ApiRequest;
 use Adadgio\GearBundle\Component\Api\ApiResponse;
 use Adadgio\GearBundle\Component\Api\Annotation\Api;
 
-use Adadgio\ParseBundle\Component\Utility\Decoder;
 use Adadgio\ParseBundle\Factory\ParseObjectFactory;
 
 /**
@@ -25,19 +24,19 @@ class UserController extends Controller
      *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function indexAction(ApiHandler $api)
+    public function indexAction(ApiRequest $request)
     {
         $this->injectDependencies();
 
-        switch($api->body('_method')) {
+        switch($request->body('_method')) {
             case 'GET':
-                return $this->queryAction($api);
+                return $this->queryAction($request);
             break;
             case null:
-                return $this->postAction($api); // its a signup
+                return $this->postAction($request); // its a signup
             break;
             default:
-                return $this->invalidMethodException($api, 'only GET is allowed');
+                return $this->invalidMethodException($request, 'only GET is allowed');
             break;
         }
     }
@@ -45,51 +44,45 @@ class UserController extends Controller
     /**
      * @Route("/_User/{objectId}", requirements={"objectId":"[A-Za-z0-9]+"}))
      * @Method("GET")
-     * @Api(method={"GET"}, security=true, type="Headers",
-     *      with={"client_id"="X-Parse-Application-Id","token"="X-Parse-Client-Key"},
-     *      provider="adadgio.rocket.api_authentication_provider.default",
-     *      requirements={"body"={}}
+     * @Api(method={"GET"}, security=true, type="static",
+     *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function getAction(Apihandler $api, $objectId)
+    public function getAction(ApiRequest $request, $objectId)
     {
         $this->injectDependencies();
         $id = ParseObjectFactory::getIdFromObjectId('_User', $objectId);
 
-        $user = $this->em
-            ->getRepository('MedicalCoreBundle:User')
-            ->findOneBy(array('id' => $id));
+        $user = $this->userManager
+            ->findUserBy(array('id' => $id));
 
         if (null === $user) {
-            return $this->notFoundException($api);
+            return $this->notFoundException($request);
         }
 
-        return $this->objectResultResponse($api, $this->serializer->serialize($user));
+        return $this->objectResultResponse($request, $this->serializer->serialize($user));
     }
 
     /**
      * @Route("/_User/{objectId}", requirements={"objectId":"[A-Za-z0-9]+"}))
      * @Method("PUT")
-     * @Api(method={"PUT"}, security=true, type="Headers",
-     *      with={"client_id"="X-Parse-Application-Id", "token"="X-Parse-Client-Key"},
-     *      provider="adadgio.rocket.api_authentication_provider.default",
-     *      requirements={}
+     * @Api(method={"PUT"}, security=true, type="static",
+     *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function putAction(ApiHandler $api, $objectId)
+    public function putAction(ApiRequest $request, $objectId)
     {
         $this->injectDependencies();
 
-        $data = $api->body(); // partial data about the user to be updated
-        $username = $api->body('username');
+        $data = $request->body(); // partial data about the user to be updated
+        $username = $request->body('username');
         $userId = ParseObjectFactory::getIdFromObjectId('_User', $objectId);
 
-        $user = $this->em
-            ->getRepository('MedicalCoreBundle:User')
-            ->findOneBy(array('id' => $userId));
+        $user = $this->userManager
+            ->findUserBy(array('id' => $userId));
 
         if (null === $user) {
-            return $this->notFoundException($api);
+            return $this->notFoundException($request);
         }
 
         // update the user...
@@ -101,33 +94,31 @@ class UserController extends Controller
 
         if ($violationList->count() > 0) {
             // get the first violation
-            return $this->violationException($api, $this->getFirstViolationMessage($violationList));
+            return $this->violationException($request, $this->getFirstViolationMessage($violationList));
         }
 
         $this->em->flush();
 
-        return $this->queryResultsResponse($api, $this->serializer->serialize($user));
+        return $this->queryResultsResponse($request, $this->serializer->serialize($user));
     }
-
+    
     /**
      * @Route("/_User")
      * @Method("POST")
-     * @Api(method={"POST"}, security=true, type="Headers",
-     *      with={"client_id"="X-Parse-Application-Id", "token"="X-Parse-Client-Key"},
-     *      provider="adadgio.rocket.api_authentication_provider.default",
-     *      requirements={}
+     * @Api(method={"POST"}, security=true, type="static",
+     *     with={"client_id"="x-parse-application-id","token"="x-parse-client-key"}
      * )
      */
-    public function postAction(ApiHandler $api)
+    public function postAction(ApiRequest $request)
     {
         $this->injectDependencies();
 
-        $data = $api->body();
-        $username = $api->body('username');
-        $password = $api->body('password');
+        $data = $request->body();
+        $username = $request->body('username');
+        $password = $request->body('password');
 
         if (empty($username) OR empty($password)) {
-            return $this->violationException($api, 'username and password are required to sign up');
+            return $this->violationException($request, 'username and password are required to sign up');
         }
 
         $user = $this->userManager->createUser();
@@ -144,7 +135,7 @@ class UserController extends Controller
         $violationList = $this->validator->validate($user, array('MedicalMobileRegistration'));
 
         if ($violationList->count() > 0) {
-            return $this->signupViolationException($api, $this->getFirstViolationMessage($violationList));
+            return $this->signupViolationException($request, $this->getFirstViolationMessage($violationList));
         }
 
         // set random confirmation token
@@ -161,23 +152,23 @@ class UserController extends Controller
             ->sendConfirmationEmailMessage($fosUser)
         ;
 
-        return $this->objectResultResponse($api, $this->loginSerializer->serialize($user));
+        return $this->objectResultResponse($request, $this->loginSerializer->serialize($user));
     }
 
     /**
      * Called by POST index action with the "_method":"GET" parameter.
      */
-    public function queryAction(ApiHandler $api)
+    public function queryAction(ApiRequest $request)
     {
         $this->injectDependencies();
 
         $composer = $this
             ->get('adadgio.rocket.parse.query_composer')
-            ->createFromRequestBody($api->body(), 'User')
+            ->createFromRequestBody($request->body(), 'User')
         ;
 
         $collection = $composer->getResult();
 
-        return $this->queryResultsResponse($api, $this->serializer->serialize($collection, false));
+        return $this->queryResultsResponse($request, $this->serializer->serialize($collection, false));
     }
 }

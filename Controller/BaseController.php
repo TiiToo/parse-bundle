@@ -51,10 +51,8 @@ class BaseController extends Controller
         $this->validator = $this->get('validator');
         $this->config = $this->getParameter('adadgio_parse.config');
 
-        // @todo
         // check if fos user bundle is installed
-        // $this->userManager = $this->get('fos_user.user_manager');
-
+        $this->userManager = $this->get('fos_user.user_manager');
         $this->serializer = $this->get('adadgio_parse.entity_serializer');
         $this->converter = $this->get('adadgio_parse.entity_converter');
         $this->loginSerializer = $this->get('adadgio_parse.login_serializer');
