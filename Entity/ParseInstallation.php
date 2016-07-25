@@ -6,10 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\MappedSuperclass()
- * @ORM\Table(name="parse_installation")
- * @ORM\Entity(repositoryClass="Adadgio\ParseBundle\Repository\BaseInstallationRepository")
+ * ORM\Table()
+ * ORM\Entity(repositoryClass="Adadgio\ParseBundle\Repository\ParseInstallationRepository")
  */
-class BaseInstallation
+class ParseInstallation
 {
     /**
      * @ORM\Column(name="id", type="integer")

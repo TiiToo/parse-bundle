@@ -60,7 +60,7 @@ class SecurityController extends Controller
         if ($user->getPassword() !== $passwordEncoded) {
             return $this->invalidLoginParameters($api);
         }
-
+        
         // authenticate the user
         $token = new UsernamePasswordToken($user, $user->getPassword(), 'main', $user->getRoles());
         $context->setToken($token);

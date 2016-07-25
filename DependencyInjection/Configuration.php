@@ -42,6 +42,11 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->append($this->simpleArrayPrototype('serialization', 'hidden', array('password', 'salt')))
                         ->append($this->simpleArrayPrototype('conversion', 'reserved', array('id', 'objectId', 'password', 'salt', 'email', 'username', 'confirmation_token')))
+                        ->arrayNode('installation')
+                            ->children()
+                                ->scalarNode('class')->defaultValue('Adadgio\ParseBundle\Entity\ParseInstallation')->end()
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
 
