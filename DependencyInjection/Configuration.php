@@ -51,9 +51,12 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('client_key')->isRequired()->end() // application secret key
                     ->scalarNode('rest_key')->defaultValue(null)->end()
                     ->scalarNode('master_key')->defaultValue(null)->end()
+                    ->arrayNode('client_config')
+                        ->prototype('scalar')->end()
+                    ->end()
                     ->end()
                 ->end()
-                
+
                 ->arrayNode('mapping')
                     ->prototype('array')
                         ->children()

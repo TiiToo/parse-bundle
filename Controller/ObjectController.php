@@ -2,16 +2,13 @@
 
 namespace Adadgio\ParseBundle\Controller;
 
-use Adadgio\ParseBundle\Controller\BaseController as Controller;
-
-use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
+use Adadgio\ParseBundle\Controller\BaseController as Controller;
 use Adadgio\GearBundle\Component\Api\ApiRequest;
 use Adadgio\GearBundle\Component\Api\ApiResponse;
 use Adadgio\GearBundle\Component\Api\Annotation\Api;
-
 use Adadgio\ParseBundle\Factory\ParseObjectFactory;
 
 /**
@@ -62,7 +59,7 @@ class ObjectController extends Controller
         if (null === $entity) {
             return $this->notFoundException();
         }
-
+        
         return $this->objectResultResponse($this->serializer->serialize($entity));
     }
 
@@ -119,7 +116,7 @@ class ObjectController extends Controller
 
         return $this->createdAtResponse($this->serializer->serialize($entity));
     }
-    
+
     /**
      * Called by POST index action with the "_method":"GET" parameter.
      */

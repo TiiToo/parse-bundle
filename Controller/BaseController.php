@@ -92,6 +92,16 @@ class BaseController extends Controller
     }
 
     /**
+     * Return a simple json response.
+     *
+     * @return object \ApiResponse
+     */
+    protected function simpleResponse(array $data = array())
+    {
+        return new ApiResponse($data, static::HTTP_OK);
+    }
+
+    /**
      * Return one object JSON directly in the response body.
      *
      * @return \Response
@@ -110,7 +120,7 @@ class BaseController extends Controller
     {
         return new ApiResponse($serializedObject, static::HTTP_OK);
     }
-    
+
     /**
      * Return one object JSON directly in the response body.
      *
