@@ -92,9 +92,9 @@ adadgio_parse:
 
     # your entities mapping(s)
     mapping:
-            product:
-                class: AppBundle\Entity\Product
-                fields:
-                    id: ~ 
-                    name: ~ 
+        product:
+            class: AppBundle\Entity\Product
+            fields:
+                id: ~ 
+                name: ~ 
 ```
