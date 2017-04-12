@@ -1,5 +1,5 @@
 {
-    "name": tiitoo/parse-bundle",
+    "name": "tiitoo/parse-bundle",
     "type": "symfony-bundle",
     "description": "AdadgioParseBundle",
     "license": "MIT",
