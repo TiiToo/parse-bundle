@@ -1,5 +1,5 @@
 {
-    "name": "adadgio/parse-bundle",
+    "name": tiitoo/parse-bundle",
     "type": "symfony-bundle",
     "description": "AdadgioParseBundle",
     "license": "MIT",
@@ -9,6 +9,15 @@
             "email": "romain.bruckert.esc@gmail.com"
         }
     ],
+     "repositories": [
+        {
+            "type": "composer",
+            "url":  "https://github.com/TiiToo/parse-bundle.git"
+        }
+    ],
+    "replace": {
+        "TiiToo/parse-bundle": "dev-master"
+    },
     "require": {
         "php": ">=5.3",
         "symfony/symfony": "^2.7|^3.0",
