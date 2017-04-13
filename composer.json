@@ -28,5 +28,6 @@
     "autoload": {
         "psr-0": { "Adadgio\\HealthBundle\\": "" }
     },
-     "target-dir": "Adadgio/HealthBundle"
+     "target-dir": "Adadgio/HealthBundle",
+     "minimum-stability":"dev"
 }
